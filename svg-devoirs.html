@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <div id="graphContainer">
+
+
+
+    </div>
+
+</body>
+
+</html>
+
+<script>
+
+    const svgns = "http://www.w3.org/2000/svg";
+    let viewPortMaxUnitX = 1000;
+    let viewPortMaxUnitY = 1000;
+    let viewport = null;
+    let verticalOffset = 5;
+    let yearWidth = 50;
+    let horizontalOffset = 5;
+    let mois = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+    let ventes = [6500, 5550, 4200, 4525, 2500, 1500, 500, 1000, 1750, 2300, 3700, 3500];
+
+
+
+    insertViewPort("graphContainer");
+    var salesData = {
+        "january": 6500,
+        "february": 5550,
+        "march": 4200,
+        "april": 4525,
+        "may": 2500,
+        "june": 1500,
+        "july": 500,
+        "august": 1000,
+        "september": 1750,
+        "october": 2300,
+        "november": 3700,
+        "december": 3500
+    };
+
+    init_UI();
+    function init_UI() {
+        drawGraphic();
+    }
+    function drawGraphic() {
+        title(Math.round(viewPortMaxUnitX / 2) - 50, 40, "Ventes 2023", 0, "2");
+        drawXaxis(mois);
+        drawYaxis(ventes);
+        demoShapes(ventes);
+    }
+    function demoShapes(ventes) {
+    let width = 20,
+        heightDiff = 350,
+        distance = 50,
+        depart = 85;
+
+    for (let i = 0; i < ventes.length; i++) {
+        let color;
+        if (ventes[i] >= 4500)
+            color = "green";
+        else if (ventes[i] >= 3000)
+            color = "yellow";
+        else if (ventes[i] >= 1500)
+            color = "orange";
+        else
+            color = "red";
+
+        let rectWidth = width;
+        let rectHeight = heightDiff - (100 - ventes[i] * 100 / 7000) * heightDiff / 100;
+        
+        let borderStroke = "black"; 
+        let borderStrokeWidth = 1; 
+
+        text(i * distance + 200 - 10, depart + (100 - ventes[i] * 100 / 7000) * heightDiff / 100 - 5, "$" + ventes[i], 0, "0.5", "black");
+        
+        viewport.appendChild(rect(i * distance + 200 - rectWidth / 2, depart + (100 - ventes[i] * 100 / 7000) * heightDiff / 100, rectWidth, rectHeight, color, borderStroke, borderStrokeWidth));
+    }
+}
+    function insertViewPort(containerId) {
+        viewport = document.createElementNS(svgns, "svg");
+        viewport.setAttribute("id", "viewport");
+        viewport.setAttribute("viewBox", "0 0 " + viewPortMaxUnitX + " " + viewPortMaxUnitY);
+        document.getElementById(containerId).appendChild(viewport);
+    }
+    function title(x, y, caption) {
+        let textWidth = caption.length * 10; // Assuming an average character width of 10 (adjust as needed)
+        let centerX = (viewPortMaxUnitX - textWidth) / 2;
+
+        text(centerX, y, caption, 0, "2");
+    }
+    function text(x, y, content, angle = 0, size = "1", fill = "black", family = "serif", style = "normal") {
+        let text = document.createElementNS(svgns, "text");
+        text.setAttribute("x", x);
+        text.setAttribute("y", y);
+        if (angle != 0)
+            text.setAttribute("transform", "rotate(" + angle + "," + x + "," + toScreen(y) + ")");
+        text.setAttribute("font-size", size + "em");
+        text.setAttribute("fill", fill);
+        text.setAttribute("font-family", family);
+        text.setAttribute("style", style);
+        text.innerHTML = content;
+        viewport.appendChild(text);
+        return text;
+    }
+    function toScreen(y) {
+        return viewPortMaxUnitY - y - 5;
+    }
+    function drawYaxis(ventes) {
+
+        let x = 0;
+        let maxY = 7000;
+        let verticalScale = 50;
+        for (let y = 7; y >= 0; y--) {
+            let label = text(horizontalOffset + 160, y * verticalScale + verticalOffset + 80, "$ " + (7 - y) * 1000, angle = 0, size = "0.8", fill = "black", family = "serif", style = "normal");
+            label.setAttribute("text-anchor", "end");
+            label.setAttribute("alignment-baseline", "middle");
+            viewport.appendChild(line(horizontalOffset + 165, y * verticalScale + verticalOffset + 80, 770, y * verticalScale + verticalOffset + 80, "black", 0.8));
+            for(let i = 0; i < 10; i++) {
+                if(y > 0)
+                    viewport.appendChild(line(horizontalOffset + 165, y * verticalScale + verticalOffset + 80 - (i * 5), 770, y * verticalScale + verticalOffset + 80 - (i * 5), "grey", 0.2));
+            }
+
+        }
+    }
+    function drawXaxis(mois) {
+        let x = horizontalOffset;
+        mois.forEach(h => {
+            let label = text(x + yearWidth / 1.2 - yearWidth / 8, 385, h, angle = 44, size = "0.8", fill = "black", family = "serif", style = "normal");
+            label.setAttribute("text-anchor", "left");
+            x += yearWidth;
+        });
+    }
+
+
+    function line(x1, y1, x2, y2, stroke = "black", strokeWidth = 1) {
+        let line = document.createElementNS(svgns, "line");
+        line.setAttribute("x1", x1); line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2); line.setAttribute("y2", y2);
+        line.setAttribute("stroke", stroke);
+        line.setAttribute("stroke-width", strokeWidth);
+        return line;
+    }
+    function rect(x, y, width, height, fill = "white", stroke = "black", strokeWidth = 1) {
+    let rect = document.createElementNS(svgns, "rect");
+    rect.setAttribute("x", x); rect.setAttribute("y", y);
+    rect.setAttribute("width", width); rect.setAttribute("height", height);
+    rect.setAttribute("fill", fill); rect.setAttribute("stroke", stroke);
+    rect.setAttribute("stroke-width", strokeWidth);
+    return rect;
+}
+
+</script>
